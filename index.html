@@ -730,12 +730,22 @@
       });
     }
 
-    function validateAllItemsSelected() {
+    function getFirstUnselectedIndex() {
       for (let index = 0; index < CHECK_ITEMS.length; index += 1) {
         const checked = document.querySelector(`input[name="item_${index}"]:checked`);
-        if (!checked) return false;
+        if (!checked) return index;
       }
-      return true;
+      return -1;
+    }
+
+    function alertAndScrollToFirstUnselected() {
+      const firstMissingIndex = getFirstUnselectedIndex();
+      if (firstMissingIndex === -1) return;
+      alert("還有項目尚未勾選！");
+      const targetCard = checklistContainer.querySelector(`[data-item-index="${firstMissingIndex}"]`);
+      if (targetCard) {
+        targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     }
 
     function buildPrintSummary() {
@@ -767,8 +777,9 @@
         localStorage.removeItem(STORAGE_KEY);
       }
     } else {
-      shiftInput.value = "白班";
-      areaInput.value = "第一生產線";
+      shiftInput.value = "日班";
+      areaInput.value = "EPI";
+      auditorInput.value = "王治國";
     }
 
     bindChecklistEvents();
@@ -791,18 +802,16 @@
     });
 
     saveBtn.addEventListener("click", () => {
-      if (!validateAllItemsSelected()) {
-        alert("還有項目尚未勾選！");
-        return;
+      if (getFirstUnselectedIndex() !== -1) {
+        alertAndScrollToFirstUnselected();
       }
       saveToLocal();
       alert("稽核結果已儲存到本機瀏覽器。");
     });
 
     printBtn.addEventListener("click", () => {
-      if (!validateAllItemsSelected()) {
-        alert("還有項目尚未勾選！");
-        return;
+      if (getFirstUnselectedIndex() !== -1) {
+        alertAndScrollToFirstUnselected();
       }
       saveToLocal();
       buildPrintSummary();
