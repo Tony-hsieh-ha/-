@@ -1,0 +1,17 @@
+{
+  "name": "合晶科技 6S 稽核管理系統",
+  "short_name": "合晶6S稽核",
+  "description": "合晶科技現場 6S 稽核與拍照紀錄系統",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#071a3a",
+  "theme_color": "#0b234b",
+  "icons": [
+    {
+      "src": "./assets/ww-logo.png",
+      "sizes": "250x140",
+      "type": "image/png"
+    }
+  ]
+}
