@@ -154,6 +154,33 @@
 
     .item { font-size: 1rem; font-weight: 600; }
 
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .check-item {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 12px;
+    }
+
+    .check-item-top {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .check-item-name {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
     .status {
       display: flex;
       gap: 10px;
@@ -171,6 +198,16 @@
       cursor: pointer;
       user-select: none;
       font-size: 0.92rem;
+    }
+
+    .status label.ok-option {
+      border-color: rgba(50, 209, 127, 0.65);
+      background: rgba(50, 209, 127, 0.15);
+    }
+
+    .status label.ng-option {
+      border-color: rgba(255, 121, 121, 0.7);
+      background: rgba(255, 121, 121, 0.14);
     }
 
     .status input {
@@ -234,9 +271,49 @@
       background: #ffffff;
     }
 
+    .item-photo-preview {
+      max-width: 160px;
+      max-height: 110px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      display: none;
+      object-fit: contain;
+      background: #ffffff;
+    }
+
     .photo-placeholder {
       color: var(--text-soft);
       font-size: 0.9rem;
+    }
+
+    .item-photo-placeholder {
+      color: var(--text-soft);
+      font-size: 0.82rem;
+    }
+
+    #printSummaryWrap {
+      display: none;
+      margin-top: 14px;
+    }
+
+    #printSummaryTable {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #b9b9b9;
+      font-size: 0.92rem;
+    }
+
+    #printSummaryTable th,
+    #printSummaryTable td {
+      border: 1px solid #b9b9b9;
+      padding: 6px 8px;
+      color: #000000;
+      background: #ffffff;
+    }
+
+    .ng-mark {
+      color: #b00000;
+      font-weight: 700;
     }
 
     .footer {
@@ -306,6 +383,7 @@
       .photo-preview-wrap { background: #ffffff; }
       .meta, .score, .field, .brand-text p { color: #333333; }
       .btn { display: none; }
+      #printSummaryWrap { display: block; }
       .field input, .field textarea, .table, .table td, .table th {
         border-color: #b9b9b9;
         color: #000000;
@@ -318,7 +396,7 @@
   <main class="dashboard" aria-label="6S 稽核管理面板">
     <header class="header">
       <div class="brand">
-        <img class="brand-logo" src="ww-logo.png" alt="合晶科技 Logo">
+        <img class="brand-logo" src="./assets/ww-logo.png" alt="合晶科技 Logo">
         <div class="brand-text">
           <h1>合晶科技 6S 現場稽核管理系統</h1>
           <p>專業工廠管理與現場品質稽核表單</p>
@@ -343,57 +421,20 @@
         </label>
       </div>
 
-      <table class="table" role="table" aria-label="6S 稽核項目表">
-        <thead>
-          <tr>
-            <th style="width: 70px;">編號</th>
-            <th>檢查項目</th>
-            <th style="width: 280px;">稽核結果</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>01</td>
-            <td class="item">走道通暢</td>
-            <td>
-              <div class="status">
-                <label><input type="radio" name="item1" value="ok" checked> <span class="tag-ok">合格</span></label>
-                <label><input type="radio" name="item1" value="ng"> <span class="tag-ng">不合格</span></label>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>02</td>
-            <td class="item">設備無灰塵</td>
-            <td>
-              <div class="status">
-                <label><input type="radio" name="item2" value="ok" checked> <span class="tag-ok">合格</span></label>
-                <label><input type="radio" name="item2" value="ng"> <span class="tag-ng">不合格</span></label>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>03</td>
-            <td class="item">標籤明確</td>
-            <td>
-              <div class="status">
-                <label><input type="radio" name="item3" value="ok" checked> <span class="tag-ok">合格</span></label>
-                <label><input type="radio" name="item3" value="ng"> <span class="tag-ng">不合格</span></label>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="section-title">稽核現場照片</div>
-      <div class="photo-row">
-        <input type="file" id="photoInput" accept="image/*" capture="environment">
-        <button class="btn btn-secondary" id="captureBtn">拍照 / 上傳照片</button>
-        <button class="btn btn-secondary" id="clearPhotoBtn">清除照片</button>
-      </div>
-      <div class="photo-preview-wrap">
-        <img id="photoPreview" alt="稽核現場縮圖預覽">
-        <div id="photoPlaceholder" class="photo-placeholder">尚未上傳照片</div>
+      <div class="section-title">6S 點檢清單（16 項）</div>
+      <div id="checklistContainer" class="checklist"></div>
+      <div id="printSummaryWrap">
+        <div class="section-title" style="color:#000000;">點檢結果總結表</div>
+        <table id="printSummaryTable" aria-label="點檢結果總結表">
+          <thead>
+            <tr>
+              <th style="width:70px;">編號</th>
+              <th>點檢項目</th>
+              <th style="width:220px;">狀態</th>
+            </tr>
+          </thead>
+          <tbody id="printSummaryBody"></tbody>
+        </table>
       </div>
 
       <div class="section-title">稽核備註</div>
@@ -419,10 +460,43 @@
   </main>
 
   <script>
-    const STORAGE_KEY = "hj_6s_audit_v1";
+    const STORAGE_KEY = "hj_6s_audit_v2";
+    const CHECK_ITEMS = [
+      "無雜物",
+      "專用推車定位",
+      "牆角無積塵",
+      "進出除塵",
+      "設備無油污殘膠",
+      "Lot卡定位",
+      "緊急按鈕無遮蔽",
+      "當班廢棄物清理",
+      "儀器鏡面清潔",
+      "標準片有效",
+      "紀錄本整齊",
+      "儀器恢復初始",
+      "包材隨手清",
+      "刀具安全收納",
+      "地面無纖維碎屑",
+      "物料標示清晰"
+    ];
+    const STATUS_OPTIONS = [
+      { value: "all_ok", label: "全區合格", kind: "ok" },
+      { value: "n_ng", label: "N不合格", kind: "ng" },
+      { value: "p_ng", label: "P不合格", kind: "ng" },
+      { value: "measure_ng", label: "量測不合格", kind: "ng" },
+      { value: "pack_ng", label: "包裝不合格", kind: "ng" }
+    ];
+    const STATUS_TEXT = {
+      all_ok: "全區合格",
+      n_ng: "N不合格",
+      p_ng: "P不合格",
+      measure_ng: "量測不合格",
+      pack_ng: "包裝不合格"
+    };
     const dateTarget = document.getElementById("today");
     const scoreTarget = document.getElementById("score");
-    const radios = Array.from(document.querySelectorAll('input[type="radio"]'));
+    const checklistContainer = document.getElementById("checklistContainer");
+    const printSummaryBody = document.getElementById("printSummaryBody");
     const resetBtn = document.getElementById("resetBtn");
     const saveBtn = document.getElementById("saveBtn");
     const printBtn = document.getElementById("printBtn");
@@ -431,15 +505,10 @@
     const areaInput = document.getElementById("areaInput");
     const auditorInput = document.getElementById("auditorInput");
     const noteInput = document.getElementById("noteInput");
-    const photoInput = document.getElementById("photoInput");
-    const captureBtn = document.getElementById("captureBtn");
-    const clearPhotoBtn = document.getElementById("clearPhotoBtn");
-    const photoPreview = document.getElementById("photoPreview");
-    const photoPlaceholder = document.getElementById("photoPlaceholder");
     const canvas = document.getElementById("signatureCanvas");
     const ctx = canvas.getContext("2d");
     let drawing = false;
-    let currentPhotoData = "";
+    let itemPhotos = {};
 
     function formatDate(date) {
       const year = date.getFullYear();
@@ -449,13 +518,43 @@
     }
 
     function updateScore() {
-      const groups = ["item1", "item2", "item3"];
-      const passed = groups.filter((name) => {
-        const checked = document.querySelector(`input[name="${name}"]:checked`);
-        return checked && checked.value === "ok";
+      const passed = CHECK_ITEMS.filter((_, index) => {
+        const checked = document.querySelector(`input[name="item_${index}"]:checked`);
+        return checked && checked.value === "all_ok";
       }).length;
-      const percent = Math.round((passed / groups.length) * 100);
+      const percent = Math.round((passed / CHECK_ITEMS.length) * 100);
       scoreTarget.textContent = `${percent}%`;
+    }
+
+    function renderChecklist() {
+      checklistContainer.innerHTML = CHECK_ITEMS.map((item, index) => {
+        const options = STATUS_OPTIONS.map((option) => {
+          const cls = option.kind === "ok" ? "ok-option" : "ng-option";
+          return `
+            <label class="${cls}">
+              <input type="radio" name="item_${index}" value="${option.value}">
+              <span>${option.label}</span>
+            </label>
+          `;
+        }).join("");
+        return `
+          <div class="check-item" data-item-index="${index}">
+            <div class="check-item-top">
+              <div class="check-item-name">${String(index + 1).padStart(2, "0")}. ${item}</div>
+              <div class="status">${options}</div>
+            </div>
+            <div class="photo-row">
+              <input type="file" id="photo_input_${index}" accept="image/*" capture="environment" style="display:none;">
+              <button type="button" class="btn btn-secondary capture-item-btn" data-index="${index}">拍照</button>
+              <button type="button" class="btn btn-secondary clear-item-photo-btn" data-index="${index}">清除照片</button>
+              <span class="item-photo-placeholder" id="photo_note_${index}">尚未拍照</span>
+            </div>
+            <div>
+              <img id="photo_preview_${index}" class="item-photo-preview" alt="點檢項目照片預覽">
+            </div>
+          </div>
+        `;
+      }).join("");
     }
 
     function setCanvasSize() {
@@ -506,19 +605,19 @@
     }
 
     function collectData() {
+      const selections = {};
+      CHECK_ITEMS.forEach((_, index) => {
+        selections[`item_${index}`] = document.querySelector(`input[name="item_${index}"]:checked`)?.value || "";
+      });
       return {
         date: dateTarget.textContent,
         shift: shiftInput.value.trim(),
         area: areaInput.value.trim(),
         auditor: auditorInput.value.trim(),
         note: noteInput.value,
-        items: {
-          item1: document.querySelector('input[name="item1"]:checked')?.value || "ok",
-          item2: document.querySelector('input[name="item2"]:checked')?.value || "ok",
-          item3: document.querySelector('input[name="item3"]:checked')?.value || "ok"
-        },
+        items: selections,
         score: scoreTarget.textContent,
-        photo: currentPhotoData,
+        itemPhotos,
         signature: canvas.toDataURL("image/png")
       };
     }
@@ -529,15 +628,18 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }
 
-    function setPhotoPreview(dataUrl) {
+    function setItemPhotoPreview(index, dataUrl) {
+      const preview = document.getElementById(`photo_preview_${index}`);
+      const note = document.getElementById(`photo_note_${index}`);
+      if (!preview || !note) return;
       if (dataUrl) {
-        photoPreview.src = dataUrl;
-        photoPreview.style.display = "block";
-        photoPlaceholder.style.display = "none";
+        preview.src = dataUrl;
+        preview.style.display = "block";
+        note.textContent = "已附照片";
       } else {
-        photoPreview.removeAttribute("src");
-        photoPreview.style.display = "none";
-        photoPlaceholder.style.display = "block";
+        preview.removeAttribute("src");
+        preview.style.display = "none";
+        note.textContent = "尚未拍照";
       }
     }
 
@@ -570,11 +672,14 @@
       areaInput.value = data.area || "";
       auditorInput.value = data.auditor || "";
       noteInput.value = data.note || "";
+      itemPhotos = data.itemPhotos || {};
 
-      ["item1", "item2", "item3"].forEach((name) => {
-        const value = data.items && data.items[name] ? data.items[name] : "ok";
-        const target = document.querySelector(`input[name="${name}"][value="${value}"]`);
+      CHECK_ITEMS.forEach((_, index) => {
+        const name = `item_${index}`;
+        const value = data.items && data.items[name] ? data.items[name] : "";
+        const target = value ? document.querySelector(`input[name="${name}"][value="${value}"]`) : null;
         if (target) target.checked = true;
+        setItemPhotoPreview(index, itemPhotos[index] || "");
       });
 
       if (data.signature) {
@@ -585,11 +690,73 @@
         image.src = data.signature;
       }
 
-      currentPhotoData = data.photo || "";
-      setPhotoPreview(currentPhotoData);
+    }
+
+    function bindChecklistEvents() {
+      const radios = Array.from(document.querySelectorAll('input[type="radio"]'));
+      radios.forEach((radio) => {
+        radio.addEventListener("change", saveToLocal);
+      });
+
+      CHECK_ITEMS.forEach((_, index) => {
+        const fileInput = document.getElementById(`photo_input_${index}`);
+        const captureButton = checklistContainer.querySelector(`.capture-item-btn[data-index="${index}"]`);
+        const clearButton = checklistContainer.querySelector(`.clear-item-photo-btn[data-index="${index}"]`);
+
+        if (captureButton && fileInput) {
+          captureButton.addEventListener("click", () => fileInput.click());
+        }
+
+        if (fileInput) {
+          fileInput.addEventListener("change", (event) => {
+            const [file] = event.target.files || [];
+            if (!file) return;
+            compressImage(file, (dataUrl) => {
+              itemPhotos[index] = dataUrl;
+              setItemPhotoPreview(index, dataUrl);
+              saveToLocal();
+            });
+            fileInput.value = "";
+          });
+        }
+
+        if (clearButton) {
+          clearButton.addEventListener("click", () => {
+            delete itemPhotos[index];
+            setItemPhotoPreview(index, "");
+            saveToLocal();
+          });
+        }
+      });
+    }
+
+    function validateAllItemsSelected() {
+      for (let index = 0; index < CHECK_ITEMS.length; index += 1) {
+        const checked = document.querySelector(`input[name="item_${index}"]:checked`);
+        if (!checked) return false;
+      }
+      return true;
+    }
+
+    function buildPrintSummary() {
+      let rows = "";
+      CHECK_ITEMS.forEach((item, index) => {
+        const value = document.querySelector(`input[name="item_${index}"]:checked`)?.value || "";
+        const text = STATUS_TEXT[value] || "未選擇";
+        const isNg = value && value !== "all_ok";
+        rows += `
+          <tr>
+            <td>${String(index + 1).padStart(2, "0")}</td>
+            <td>${item}</td>
+            <td>${isNg ? `<span class="ng-mark">區域不合格：${text}</span>` : text}</td>
+          </tr>
+        `;
+      });
+      printSummaryBody.innerHTML = rows;
     }
 
     dateTarget.textContent = formatDate(new Date());
+    renderChecklist();
     setCanvasSize();
 
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -602,59 +769,43 @@
     } else {
       shiftInput.value = "白班";
       areaInput.value = "第一生產線";
-      setPhotoPreview("");
     }
 
+    bindChecklistEvents();
     updateScore();
-
-    radios.forEach((radio) => {
-      radio.addEventListener("change", saveToLocal);
-    });
 
     [shiftInput, areaInput, auditorInput, noteInput].forEach((input) => {
       input.addEventListener("input", saveToLocal);
     });
 
-    captureBtn.addEventListener("click", () => {
-      photoInput.click();
-    });
-
-    photoInput.addEventListener("change", (event) => {
-      const [file] = event.target.files || [];
-      if (!file) return;
-      compressImage(file, (dataUrl) => {
-        currentPhotoData = dataUrl;
-        setPhotoPreview(currentPhotoData);
-        saveToLocal();
-      });
-      photoInput.value = "";
-    });
-
-    clearPhotoBtn.addEventListener("click", () => {
-      currentPhotoData = "";
-      setPhotoPreview("");
-      saveToLocal();
-    });
-
     resetBtn.addEventListener("click", () => {
-      ["item1", "item2", "item3"].forEach((name) => {
-        const okRadio = document.querySelector(`input[name="${name}"][value="ok"]`);
-        if (okRadio) okRadio.checked = true;
+      CHECK_ITEMS.forEach((_, index) => {
+        const checked = document.querySelector(`input[name="item_${index}"]:checked`);
+        if (checked) checked.checked = false;
+        delete itemPhotos[index];
+        setItemPhotoPreview(index, "");
       });
       noteInput.value = "";
-      currentPhotoData = "";
-      setPhotoPreview("");
       clearSignature(false);
       saveToLocal();
     });
 
     saveBtn.addEventListener("click", () => {
+      if (!validateAllItemsSelected()) {
+        alert("還有項目尚未勾選！");
+        return;
+      }
       saveToLocal();
       alert("稽核結果已儲存到本機瀏覽器。");
     });
 
     printBtn.addEventListener("click", () => {
+      if (!validateAllItemsSelected()) {
+        alert("還有項目尚未勾選！");
+        return;
+      }
       saveToLocal();
+      buildPrintSummary();
       window.print();
     });
 
