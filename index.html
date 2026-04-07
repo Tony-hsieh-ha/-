@@ -767,17 +767,17 @@
           <button class="view-btn" data-view="detailed">圖文詳細紀錄</button>
         </div>
         
-        <!-- 圓餅圖：各區域缺失數量比例 -->
+        <!-- 圓餅圖：各缺失項目數量比例 -->
         <div class="chart-wrapper">
-          <div class="chart-title">各區域缺失數量比例</div>
+          <div class="chart-title">各缺失項目數量比例</div>
           <div class="chart-container">
             <canvas id="pieChart"></canvas>
           </div>
         </div>
 
-        <!-- 長條圖：近7天各區缺失次數對比 -->
+        <!-- 長條圖：近7天不合格主題次數對比 -->
         <div class="chart-wrapper">
-          <div class="chart-title">近7天各區缺失次數對比</div>
+          <div class="chart-title">近7天不合格主題次數對比</div>
           <div class="chart-container">
             <canvas id="barChart"></canvas>
           </div>
@@ -1261,40 +1261,58 @@
     }
 
     function renderStats(records, titleText) {
-      const counter = new Map();
+      const itemCounter = new Map();
+      const statusCounter = new Map();
+      
       records.forEach((record) => {
         CHECK_ITEMS.forEach((item, index) => {
           const status = record.items?.[`item_${index}`];
           if (!status || status === "all_ok") return;
-          const key = `${record.area || "未填區域"}||${item}`;
-          counter.set(key, (counter.get(key) || 0) + 1);
+          
+          // 統計缺失項目
+          itemCounter.set(item, (itemCounter.get(item) || 0) + 1);
+          
+          // 統計不合格主題
+          const statusText = STATUS_TEXT[status] || status;
+          statusCounter.set(statusText, (statusCounter.get(statusText) || 0) + 1);
         });
       });
 
-      if (counter.size === 0) {
+      if (itemCounter.size === 0) {
         statsWrap.style.display = "none";
         chartsSection.style.display = "none";
         alert("目前沒有可統計的缺失資料。");
         return;
       }
 
-      const rows = Array.from(counter.entries())
-        .map(([key, count]) => {
-          const [area, item] = key.split("||");
-          return { area, item, count };
-        })
-        .sort((a, b) => b.count - a.count || a.area.localeCompare(b.area, "zh-Hant"))
+      // 生成缺失項目統計表格
+      const itemRows = Array.from(itemCounter.entries())
+        .map(([item, count]) => ({ item: item, count: count }))
+        .sort((a, b) => b.count - a.count)
         .map((row) => `
           <tr>
-            <td>${row.area}</td>
+            <td style="width: 200px;">缺失項目</td>
             <td>${row.item}</td>
-            <td>${row.count}</td>
+            <td style="width: 120px;">${row.count}</td>
+          </tr>
+        `)
+        .join("");
+
+      // 生成不合格主題統計表格
+      const statusRows = Array.from(statusCounter.entries())
+        .map(([status, count]) => ({ status: status, count: count }))
+        .sort((a, b) => b.count - a.count)
+        .map((row) => `
+          <tr>
+            <td style="width: 200px;">不合格主題</td>
+            <td>${row.status}</td>
+            <td style="width: 120px;">${row.count}</td>
           </tr>
         `)
         .join("");
 
       statsTitle.textContent = titleText;
-      statsBody.innerHTML = rows;
+      statsBody.innerHTML = itemRows + statusRows;
       statsWrap.style.display = "block";
       
       // 準備圖表數據並顯示圖表
@@ -1549,19 +1567,19 @@
 
     // 新增圓餅圖實現
     function createPieChart(records) {
-      const areaCounter = new Map();
+      const itemCounter = new Map();
       
       records.forEach((record) => {
-        const area = record.area || "未填區域";
         CHECK_ITEMS.forEach((_, index) => {
           const status = record.items?.[`item_${index}`];
           if (status && status !== "all_ok") {
-            areaCounter.set(area, (areaCounter.get(area) || 0) + 1);
+            const item = CHECK_ITEMS[index];
+            itemCounter.set(item, (itemCounter.get(item) || 0) + 1);
           }
         });
       });
 
-      if (areaCounter.size === 0) {
+      if (itemCounter.size === 0) {
         if (pieChart) {
           pieChart.destroy();
           pieChart = null;
@@ -1569,12 +1587,13 @@
         return;
       }
 
-      const labels = Array.from(areaCounter.keys());
-      const data = Array.from(areaCounter.values());
+      const labels = Array.from(itemCounter.keys());
+      const data = Array.from(itemCounter.values());
       
       const colors = [
         '#ff7979', '#ffa500', '#9370db', '#20b2aa', '#32d17f',
-        '#4f8dff', '#ff6b9d', '#c44569', '#f8b500', '#00b894'
+        '#4f8dff', '#ff6b9d', '#c44569', '#f8b500', '#00b894',
+        '#ff6348', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'
       ];
 
       if (pieChart) {
@@ -1621,8 +1640,8 @@
           onClick: (event, elements) => {
             if (elements.length > 0) {
               const index = elements[0].index;
-              const area = labels[index];
-              filterRecordsByArea(area);
+              const item = labels[index];
+              filterRecordsByItem(item);
             }
           }
         }
@@ -1631,7 +1650,7 @@
 
     // 新增長條圖實現
     function createBarChart(records) {
-      const dailyAreaCounter = new Map();
+      const dailyStatusCounter = new Map();
       
       // 獲取最近7天的日期
       const today = new Date();
@@ -1641,44 +1660,39 @@
       for (let i = 0; i < 7; i++) {
         const date = new Date(sevenDaysAgo.getTime() + i * 24 * 60 * 60 * 1000);
         const dateStr = date.toLocaleDateString('zh-TW');
-        dailyAreaCounter.set(dateStr, new Map());
+        dailyStatusCounter.set(dateStr, new Map());
       }
 
-      // 統計各區域在各天的缺失次數
+      // 統計各不合格主題在各天的缺失次數
       records.forEach((record) => {
         const recordDate = new Date(record.savedAt);
         if (recordDate >= sevenDaysAgo && recordDate <= today) {
           const dateStr = recordDate.toLocaleDateString('zh-TW');
-          const area = record.area || "未填區域";
           
-          if (!dailyAreaCounter.has(dateStr)) {
-            dailyAreaCounter.set(dateStr, new Map());
+          if (!dailyStatusCounter.has(dateStr)) {
+            dailyStatusCounter.set(dateStr, new Map());
           }
           
-          let dailyCount = 0;
           CHECK_ITEMS.forEach((_, index) => {
             const status = record.items?.[`item_${index}`];
             if (status && status !== "all_ok") {
-              dailyCount++;
+              const statusText = STATUS_TEXT[status] || status;
+              const statusMap = dailyStatusCounter.get(dateStr);
+              statusMap.set(statusText, (statusMap.get(statusText) || 0) + 1);
             }
           });
-          
-          if (dailyCount > 0) {
-            const areaMap = dailyAreaCounter.get(dateStr);
-            areaMap.set(area, (areaMap.get(area) || 0) + dailyCount);
-          }
         }
       });
 
       // 準備圖表數據
-      const dates = Array.from(dailyAreaCounter.keys()).sort();
-      const allAreas = new Set();
-      dailyAreaCounter.forEach(areaMap => {
-        areaMap.forEach((_, area) => allAreas.add(area));
+      const dates = Array.from(dailyStatusCounter.keys()).sort();
+      const allStatuses = new Set();
+      dailyStatusCounter.forEach(statusMap => {
+        statusMap.forEach((_, status) => allStatuses.add(status));
       });
-      const areaLabels = Array.from(allAreas).sort();
+      const statusLabels = Array.from(allStatuses).sort();
 
-      if (areaLabels.length === 0) {
+      if (statusLabels.length === 0) {
         if (barChart) {
           barChart.destroy();
           barChart = null;
@@ -1686,19 +1700,19 @@
         return;
       }
 
-      const datasets = areaLabels.map((area, index) => {
+      const datasets = statusLabels.map((status, index) => {
         const colors = [
           '#ff7979', '#ffa500', '#9370db', '#20b2aa', '#32d17f',
           '#4f8dff', '#ff6b9d', '#c44569', '#f8b500', '#00b894'
         ];
         
         const data = dates.map(date => {
-          const areaMap = dailyAreaCounter.get(date);
-          return areaMap ? (areaMap.get(area) || 0) : 0;
+          const statusMap = dailyStatusCounter.get(date);
+          return statusMap ? (statusMap.get(status) || 0) : 0;
         });
 
         return {
-          label: area,
+          label: status,
           data: data,
           backgroundColor: colors[index % colors.length],
           borderColor: colors[index % colors.length],
@@ -1759,8 +1773,8 @@
           onClick: (event, elements) => {
             if (elements.length > 0) {
               const datasetIndex = elements[0].datasetIndex;
-              const area = areaLabels[datasetIndex];
-              filterRecordsByArea(area);
+              const status = statusLabels[datasetIndex];
+              filterRecordsByStatus(status);
             }
           }
         }
@@ -1822,6 +1836,32 @@
       `).join('');
 
       recordsGrid.innerHTML = recordsHTML;
+    }
+
+    function filterRecordsByItem(item) {
+      const filteredRecords = allRecordsData.filter(record => record.itemName === item);
+      
+      filterInfo.textContent = `篩選條件：${item} (${filteredRecords.length}筆紀錄)`;
+      renderDetailedRecords(filteredRecords);
+      
+      // 切換到詳細紀錄視圖
+      switchToDetailedView();
+      
+      // 滾動到詳細紀錄區域
+      detailedRecords.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function filterRecordsByStatus(status) {
+      const filteredRecords = allRecordsData.filter(record => record.statusText === status);
+      
+      filterInfo.textContent = `篩選條件：${status} (${filteredRecords.length}筆紀錄)`;
+      renderDetailedRecords(filteredRecords);
+      
+      // 切換到詳細紀錄視圖
+      switchToDetailedView();
+      
+      // 滾動到詳細紀錄區域
+      detailedRecords.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function filterRecordsByArea(area) {
@@ -2010,11 +2050,11 @@
       const history = getHistory();
       const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
       const filtered = history.filter((record) => new Date(record.savedAt).getTime() >= sevenDaysAgo);
-      renderStats(filtered, "近 7 天各區缺失統計");
+      renderStats(filtered, "近 7 天缺失項目與不合格主題統計");
     });
 
     allTimeStatsBtn.addEventListener("click", () => {
-      renderStats(getHistory(), "上線至今各區缺失統計");
+      renderStats(getHistory(), "上線至今缺失項目與不合格主題統計");
     });
 
     exportDataBtn.addEventListener("click", () => {
