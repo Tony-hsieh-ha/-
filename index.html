@@ -9,6 +9,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./ww-logo.png">
   <title>合晶科技 6S 稽核管理系統</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --bg-main: #071a3a;
@@ -365,6 +366,103 @@
     .tag-ok { color: var(--ok); }
     .tag-ng { color: var(--ng); }
 
+    .chart-container {
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .chart-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .chart-tab {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+
+    .chart-tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg-main);
+    }
+
+    .chart-tab:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .chart-canvas {
+      width: 100%;
+      height: 300px;
+      background: rgba(255, 255, 255, 0.01);
+      border-radius: 8px;
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      font-size: 0.85rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+
+    .charts-section {
+      margin-top: 24px;
+    }
+
+    .chart-wrapper {
+      margin-bottom: 24px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .chart-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-soft);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 350px;
+      background: rgba(255, 255, 255, 0.01);
+      border-radius: 8px;
+      padding: 8px;
+    }
+
+    .chart-container canvas {
+      width: 100% !important;
+      height: 100% !important;
+      max-height: 334px;
+    }
+
     @media (max-width: 820px) {
       .header { flex-direction: column; align-items: flex-start; }
       .meta { text-align: left; }
@@ -374,6 +472,26 @@
     @media (max-width: 700px) {
       .header, .content { padding-left: 18px; padding-right: 18px; }
       .table th, .table td { padding: 12px 10px; }
+      .chart-container {
+        height: 280px;
+      }
+      .chart-title {
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .chart-wrapper {
+        padding: 12px;
+        margin-bottom: 16px;
+      }
+      .chart-container {
+        height: 250px;
+      }
+      .chart-title {
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+      }
     }
 
     @media print {
@@ -471,6 +589,38 @@
         </table>
       </div>
 
+      <!-- 新增視覺化統計圖表 -->
+      <div class="charts-section" id="chartsSection" style="display:none;">
+        <div class="section-title">視覺化統計圖表</div>
+        
+        <!-- 圓餅圖：各區域缺失數量比例 -->
+        <div class="chart-wrapper">
+          <div class="chart-title">各區域缺失數量比例</div>
+          <div class="chart-container">
+            <canvas id="pieChart"></canvas>
+          </div>
+        </div>
+
+        <!-- 長條圖：近7天各區缺失次數對比 -->
+        <div class="chart-wrapper">
+          <div class="chart-title">近7天各區缺失次數對比</div>
+          <div class="chart-container">
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+      </div>
+        
+        <div class="chart-container" id="chartContainer" style="display:none;">
+          <div class="chart-tabs">
+            <div class="chart-tab active" data-chart="bar">直條圖</div>
+            <div class="chart-tab" data-chart="trend">趨勢圖</div>
+            <div class="chart-tab" data-chart="area">區域分布</div>
+          </div>
+          <canvas id="chartCanvas" class="chart-canvas"></canvas>
+          <div class="chart-legend" id="chartLegend"></div>
+        </div>
+      </div>
+
       <div class="footer">
         <div class="score">目前合格率：<strong id="score">100%</strong></div>
         <div>
@@ -521,6 +671,19 @@
     const statsWrap = document.getElementById("statsWrap");
     const statsTitle = document.getElementById("statsTitle");
     const statsBody = document.getElementById("statsBody");
+    const chartContainer = document.getElementById("chartContainer");
+    const chartCanvas = document.getElementById("chartCanvas");
+    const chartLegend = document.getElementById("chartLegend");
+    const ctx = chartCanvas.getContext("2d");
+    let currentChartType = "bar";
+    let currentChartData = null;
+    
+    // 新增Chart.js圖表變數
+    let pieChart = null;
+    let barChart = null;
+    const pieChartCanvas = document.getElementById("pieChart");
+    const barChartCanvas = document.getElementById("barChart");
+    const chartsSection = document.getElementById("chartsSection");
     const resetBtn = document.getElementById("resetBtn");
     const saveBtn = document.getElementById("saveBtn");
     const printBtn = document.getElementById("printBtn");
@@ -783,6 +946,7 @@
 
       if (counter.size === 0) {
         statsWrap.style.display = "none";
+        chartsSection.style.display = "none";
         alert("目前沒有可統計的缺失資料。");
         return;
       }
@@ -805,7 +969,457 @@
       statsTitle.textContent = titleText;
       statsBody.innerHTML = rows;
       statsWrap.style.display = "block";
+      
+      // 準備圖表數據並顯示圖表
+      currentChartData = prepareChartData(records);
+      chartContainer.style.display = "block";
+      renderChart(currentChartType);
+      
+      // 新增：顯示Chart.js圖表
+      chartsSection.style.display = "block";
+      createPieChart(records);
+      createBarChart(records);
+      
       statsWrap.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function prepareChartData(records) {
+      const statusData = {
+        n_ng: [],
+        p_ng: [],
+        measure_ng: [],
+        pack_ng: []
+      };
+      
+      const dailyData = new Map();
+      const areaData = new Map();
+      
+      records.forEach((record) => {
+        const date = new Date(record.savedAt).toLocaleDateString('zh-TW');
+        const area = record.area || "未填區域";
+        
+        if (!dailyData.has(date)) {
+          dailyData.set(date, { n_ng: 0, p_ng: 0, measure_ng: 0, pack_ng: 0 });
+        }
+        if (!areaData.has(area)) {
+          areaData.set(area, { n_ng: 0, p_ng: 0, measure_ng: 0, pack_ng: 0 });
+        }
+        
+        CHECK_ITEMS.forEach((item, index) => {
+          const status = record.items?.[`item_${index}`];
+          if (status && status !== "all_ok") {
+            statusData[status].push({ date, area, item });
+            
+            dailyData.get(date)[status]++;
+            areaData.get(area)[status]++;
+          }
+        });
+      });
+      
+      return {
+        statusData,
+        dailyData: Array.from(dailyData.entries()).sort((a, b) => new Date(a[0]) - new Date(b[0])),
+        areaData: Array.from(areaData.entries())
+      };
+    }
+
+    function renderChart(type) {
+      if (!currentChartData) return;
+      
+      // 設定Canvas尺寸
+      const rect = chartCanvas.getBoundingClientRect();
+      chartCanvas.width = rect.width;
+      chartCanvas.height = 300;
+      
+      // 清除畫布
+      ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+      
+      switch(type) {
+        case "bar":
+          renderBarChart();
+          break;
+        case "trend":
+          renderTrendChart();
+          break;
+        case "area":
+          renderAreaChart();
+          break;
+      }
+      
+      updateLegend();
+    }
+
+    function renderBarChart() {
+      const { dailyData } = currentChartData;
+      if (dailyData.length === 0) return;
+      
+      const padding = 40;
+      const chartWidth = chartCanvas.width - padding * 2;
+      const chartHeight = chartCanvas.height - padding * 2;
+      const barWidth = chartWidth / (dailyData.length * 4 + dailyData.length - 1);
+      const maxValue = Math.max(...dailyData.map(([_, data]) => 
+        data.n_ng + data.p_ng + data.measure_ng + data.pack_ng
+      ));
+      
+      const colors = {
+        n_ng: '#ff7979',
+        p_ng: '#ffa500',
+        measure_ng: '#9370db',
+        pack_ng: '#20b2aa'
+      };
+      
+      dailyData.forEach(([date, data], index) => {
+        const x = padding + index * (barWidth * 4 + barWidth);
+        let yOffset = 0;
+        
+        ['n_ng', 'p_ng', 'measure_ng', 'pack_ng'].forEach(status => {
+          const value = data[status];
+          if (value > 0) {
+            const barHeight = (value / maxValue) * chartHeight;
+            const y = chartCanvas.height - padding - yOffset - barHeight;
+            
+            ctx.fillStyle = colors[status];
+            ctx.fillRect(x, y, barWidth - 2, barHeight);
+            
+            yOffset += barHeight;
+          }
+          x += barWidth;
+        });
+      });
+      
+      // 繪製座標軸
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding, padding);
+      ctx.lineTo(padding, chartCanvas.height - padding);
+      ctx.lineTo(chartCanvas.width - padding, chartCanvas.height - padding);
+      ctx.stroke();
+    }
+
+    function renderTrendChart() {
+      const { dailyData } = currentChartData;
+      if (dailyData.length === 0) return;
+      
+      const padding = 40;
+      const chartWidth = chartCanvas.width - padding * 2;
+      const chartHeight = chartCanvas.height - padding * 2;
+      const pointSpacing = chartWidth / Math.max(dailyData.length - 1, 1);
+      
+      const colors = {
+        n_ng: '#ff7979',
+        p_ng: '#ffa500',
+        measure_ng: '#9370db',
+        pack_ng: '#20b2aa'
+      };
+      
+      const maxValue = Math.max(...dailyData.map(([_, data]) => 
+        Math.max(data.n_ng, data.p_ng, data.measure_ng, data.pack_ng)
+      ));
+      
+      ['n_ng', 'p_ng', 'measure_ng', 'pack_ng'].forEach(status => {
+        ctx.strokeStyle = colors[status];
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        
+        dailyData.forEach(([date, data], index) => {
+          const x = padding + index * pointSpacing;
+          const y = chartCanvas.height - padding - (data[status] / maxValue) * chartHeight;
+          
+          if (index === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+          
+          // 繪製數據點
+          ctx.fillStyle = colors[status];
+          ctx.beginPath();
+          ctx.arc(x, y, 3, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        
+        ctx.stroke();
+      });
+      
+      // 繪製座標軸
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding, padding);
+      ctx.lineTo(padding, chartCanvas.height - padding);
+      ctx.lineTo(chartCanvas.width - padding, chartCanvas.height - padding);
+      ctx.stroke();
+    }
+
+    function renderAreaChart() {
+      const { areaData } = currentChartData;
+      if (areaData.length === 0) return;
+      
+      const padding = 40;
+      const chartWidth = chartCanvas.width - padding * 2;
+      const chartHeight = chartCanvas.height - padding * 2;
+      const barWidth = chartWidth / (areaData.length * 4 + areaData.length - 1);
+      const maxValue = Math.max(...areaData.map(([_, data]) => 
+        data.n_ng + data.p_ng + data.measure_ng + data.pack_ng
+      ));
+      
+      const colors = {
+        n_ng: '#ff7979',
+        p_ng: '#ffa500',
+        measure_ng: '#9370db',
+        pack_ng: '#20b2aa'
+      };
+      
+      areaData.forEach(([area, data], index) => {
+        const x = padding + index * (barWidth * 4 + barWidth);
+        let yOffset = 0;
+        
+        ['n_ng', 'p_ng', 'measure_ng', 'pack_ng'].forEach(status => {
+          const value = data[status];
+          if (value > 0) {
+            const barHeight = (value / maxValue) * chartHeight;
+            const y = chartCanvas.height - padding - yOffset - barHeight;
+            
+            ctx.fillStyle = colors[status];
+            ctx.fillRect(x, y, barWidth - 2, barHeight);
+            
+            yOffset += barHeight;
+          }
+          x += barWidth;
+        });
+      });
+      
+      // 繪製座標軸
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding, padding);
+      ctx.lineTo(padding, chartCanvas.height - padding);
+      ctx.lineTo(chartCanvas.width - padding, chartCanvas.height - padding);
+      ctx.stroke();
+    }
+
+    function updateLegend() {
+      const legendItems = [
+        { color: '#ff7979', label: 'N不合格' },
+        { color: '#ffa500', label: 'P不合格' },
+        { color: '#9370db', label: '量測不合格' },
+        { color: '#20b2aa', label: '包裝不合格' }
+      ];
+      
+      chartLegend.innerHTML = legendItems.map(item => `
+        <div class="legend-item">
+          <div class="legend-color" style="background: ${item.color}"></div>
+          <span>${item.label}</span>
+        </div>
+      `).join('');
+    }
+
+    // 新增圓餅圖實現
+    function createPieChart(records) {
+      const areaCounter = new Map();
+      
+      records.forEach((record) => {
+        const area = record.area || "未填區域";
+        CHECK_ITEMS.forEach((_, index) => {
+          const status = record.items?.[`item_${index}`];
+          if (status && status !== "all_ok") {
+            areaCounter.set(area, (areaCounter.get(area) || 0) + 1);
+          }
+        });
+      });
+
+      if (areaCounter.size === 0) {
+        if (pieChart) {
+          pieChart.destroy();
+          pieChart = null;
+        }
+        return;
+      }
+
+      const labels = Array.from(areaCounter.keys());
+      const data = Array.from(areaCounter.values());
+      
+      const colors = [
+        '#ff7979', '#ffa500', '#9370db', '#20b2aa', '#32d17f',
+        '#4f8dff', '#ff6b9d', '#c44569', '#f8b500', '#00b894'
+      ];
+
+      if (pieChart) {
+        pieChart.destroy();
+      }
+
+      pieChart = new Chart(pieChartCanvas, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: colors.slice(0, labels.length),
+            borderColor: '#ffffff',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#d5e4ff',
+                padding: 15,
+                font: {
+                  size: 12
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.parsed || 0;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  return `${label}: ${value}次 (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 新增長條圖實現
+    function createBarChart(records) {
+      const dailyAreaCounter = new Map();
+      
+      // 獲取最近7天的日期
+      const today = new Date();
+      const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      
+      // 初始化最近7天的數據
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(sevenDaysAgo.getTime() + i * 24 * 60 * 60 * 1000);
+        const dateStr = date.toLocaleDateString('zh-TW');
+        dailyAreaCounter.set(dateStr, new Map());
+      }
+
+      // 統計各區域在各天的缺失次數
+      records.forEach((record) => {
+        const recordDate = new Date(record.savedAt);
+        if (recordDate >= sevenDaysAgo && recordDate <= today) {
+          const dateStr = recordDate.toLocaleDateString('zh-TW');
+          const area = record.area || "未填區域";
+          
+          if (!dailyAreaCounter.has(dateStr)) {
+            dailyAreaCounter.set(dateStr, new Map());
+          }
+          
+          let dailyCount = 0;
+          CHECK_ITEMS.forEach((_, index) => {
+            const status = record.items?.[`item_${index}`];
+            if (status && status !== "all_ok") {
+              dailyCount++;
+            }
+          });
+          
+          if (dailyCount > 0) {
+            const areaMap = dailyAreaCounter.get(dateStr);
+            areaMap.set(area, (areaMap.get(area) || 0) + dailyCount);
+          }
+        }
+      });
+
+      // 準備圖表數據
+      const dates = Array.from(dailyAreaCounter.keys()).sort();
+      const allAreas = new Set();
+      dailyAreaCounter.forEach(areaMap => {
+        areaMap.forEach((_, area) => allAreas.add(area));
+      });
+      const areaLabels = Array.from(allAreas).sort();
+
+      if (areaLabels.length === 0) {
+        if (barChart) {
+          barChart.destroy();
+          barChart = null;
+        }
+        return;
+      }
+
+      const datasets = areaLabels.map((area, index) => {
+        const colors = [
+          '#ff7979', '#ffa500', '#9370db', '#20b2aa', '#32d17f',
+          '#4f8dff', '#ff6b9d', '#c44569', '#f8b500', '#00b894'
+        ];
+        
+        const data = dates.map(date => {
+          const areaMap = dailyAreaCounter.get(date);
+          return areaMap ? (areaMap.get(area) || 0) : 0;
+        });
+
+        return {
+          label: area,
+          data: data,
+          backgroundColor: colors[index % colors.length],
+          borderColor: colors[index % colors.length],
+          borderWidth: 1
+        };
+      });
+
+      if (barChart) {
+        barChart.destroy();
+      }
+
+      barChart = new Chart(barChartCanvas, {
+        type: 'bar',
+        data: {
+          labels: dates,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              stacked: true,
+              ticks: {
+                color: '#d5e4ff'
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              }
+            },
+            y: {
+              stacked: true,
+              beginAtZero: true,
+              ticks: {
+                color: '#d5e4ff'
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#d5e4ff',
+                padding: 15,
+                font: {
+                  size: 12
+                }
+              }
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false
+            }
+          }
+        }
+      });
     }
 
     function bindChecklistEvents() {
@@ -934,6 +1548,32 @@
       const [file] = event.target.files || [];
       if (file) importBackup(file);
       importFileInput.value = "";
+    });
+
+    // 圖表標籤切換事件
+    document.querySelectorAll(".chart-tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".chart-tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        currentChartType = tab.dataset.chart;
+        if (currentChartData) {
+          renderChart(currentChartType);
+        }
+      });
+    });
+
+    // 視窗大小變更時重新繪製圖表
+    window.addEventListener("resize", () => {
+      if (currentChartData && chartContainer.style.display !== "none") {
+        renderChart(currentChartType);
+      }
+      // 重新繪製Chart.js圖表
+      if (pieChart) {
+        pieChart.resize();
+      }
+      if (barChart) {
+        barChart.resize();
+      }
     });
 
     if ("serviceWorker" in navigator) {

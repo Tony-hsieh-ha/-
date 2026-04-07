@@ -9,7 +9,7 @@
   "theme_color": "#0b234b",
   "icons": [
     {
-      "src": "./assets/ww-logo.png",
+      "src": "./ww-logo.png",
       "sizes": "250x140",
       "type": "image/png"
     }
