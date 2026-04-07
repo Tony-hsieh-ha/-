@@ -606,6 +606,138 @@
       font-size: 0.9rem;
     }
 
+    /* 優良事蹟區塊樣式 */
+    .merits-section {
+      margin-top: 20px;
+    }
+
+    .merits-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .merits-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .merits-count {
+      color: var(--ok);
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .merits-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .merit-card {
+      background: rgba(50, 209, 127, 0.08);
+      border: 1px solid rgba(50, 209, 127, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .merit-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(50, 209, 127, 0.2);
+    }
+
+    .merit-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .merit-category {
+      font-weight: 700;
+      color: var(--ok);
+      font-size: 1rem;
+    }
+
+    .merit-remove {
+      background: rgba(255, 121, 121, 0.1);
+      border: 1px solid rgba(255, 121, 121, 0.3);
+      color: var(--ng);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .merit-remove:hover {
+      background: rgba(255, 121, 121, 0.2);
+      transform: scale(1.05);
+    }
+
+    .merit-description {
+      margin-bottom: 12px;
+    }
+
+    .merit-description textarea {
+      width: 100%;
+      min-height: 80px;
+      border: 1px solid rgba(50, 209, 127, 0.3);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      padding: 10px;
+      font-size: 0.9rem;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .merit-photo-section {
+      margin-bottom: 12px;
+    }
+
+    .merit-photo-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .merit-photo-preview {
+      max-width: 180px;
+      max-height: 120px;
+      border-radius: 8px;
+      border: 1px solid rgba(50, 209, 127, 0.3);
+      display: none;
+      object-fit: contain;
+      background: #ffffff;
+    }
+
+    .merit-photo-placeholder {
+      color: var(--ok);
+      font-size: 0.85rem;
+    }
+
+    .no-merits-message {
+      text-align: center;
+      color: var(--ok);
+      padding: 40px;
+      font-size: 0.95rem;
+      background: rgba(50, 209, 127, 0.05);
+      border: 1px dashed rgba(50, 209, 127, 0.3);
+      border-radius: 12px;
+      margin: 20px 0;
+    }
+
     @media (max-width: 820px) {
       .header { flex-direction: column; align-items: flex-start; }
       .meta { text-align: left; }
@@ -631,6 +763,18 @@
       .view-btn {
         width: 100%;
         max-width: 200px;
+      }
+      .merits-container {
+        grid-template-columns: 1fr;
+      }
+      .merits-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .merits-info {
+        justify-content: center;
+        text-align: center;
       }
     }
 
@@ -721,6 +865,23 @@
 
       <div class="section-title">6S 點檢清單</div>
       <div id="checklistContainer" class="checklist"></div>
+      
+      <!-- 新增優良事蹟區塊 -->
+      <div class="section-title">優良事蹟記錄</div>
+      <div class="merits-section">
+        <div class="merits-header">
+          <div class="merits-info">
+            <span class="merits-count">已記錄：<span id="meritsCountDisplay">0</span>/5 個優良事蹟</span>
+            <button type="button" class="btn btn-secondary" id="addMeritBtn">+ 新增優良事蹟</button>
+          </div>
+        </div>
+        <div id="meritsContainer" class="merits-container">
+          <!-- 優良事蹟卡片將在這裡動態生成 -->
+        </div>
+        <div id="noMeritsMessage" class="no-merits-message">
+          點擊「新增優良事蹟」按鈕來記錄優良表現
+        </div>
+      </div>
       <div id="printSummaryWrap">
         <div class="section-title" style="color:#000000;">點檢結果總結表</div>
         <table id="printSummaryTable" aria-label="點檢結果總結表">
@@ -767,17 +928,17 @@
           <button class="view-btn" data-view="detailed">圖文詳細紀錄</button>
         </div>
         
-        <!-- 圓餅圖：各缺失項目數量比例 -->
+        <!-- 圓餅圖：缺失項目與優良事蹟比例 -->
         <div class="chart-wrapper">
-          <div class="chart-title">各缺失項目數量比例</div>
+          <div class="chart-title">缺失項目與優良事蹟比例</div>
           <div class="chart-container">
             <canvas id="pieChart"></canvas>
           </div>
         </div>
 
-        <!-- 長條圖：近7天不合格主題次數對比 -->
+        <!-- 長條圖：近7天不合格主題與優良事蹟對比 -->
         <div class="chart-wrapper">
-          <div class="chart-title">近7天不合格主題次數對比</div>
+          <div class="chart-title">近7天不合格主題與優良事蹟對比</div>
           <div class="chart-container">
             <canvas id="barChart"></canvas>
           </div>
@@ -851,6 +1012,21 @@
       measure_ng: "量測不合格",
       pack_ng: "包裝不合格"
     };
+    
+    // 新增優良事蹟相關常數
+    const MERIT_CATEGORIES = [
+      "5S執行優良",
+      "安全意識突出", 
+      "團隊合作表現",
+      "創新改善提案",
+      "效率提升貢獻",
+      "品質管控表現",
+      "設備維護保養",
+      "環境整潔維護",
+      "作業流程優化",
+      "其他優良表現"
+    ];
+    const MAX_MERITS_PER_AUDIT = 5; // 每次稽核最多記錄5個優良事蹟
 
     const dateTarget = document.getElementById("today");
     const scoreTarget = document.getElementById("score");
@@ -880,6 +1056,10 @@
     const clearFilterBtn = document.getElementById("clearFilterBtn");
     let currentFilterArea = null;
     let allRecordsData = [];
+    
+    // 新增優良事蹟相關變數
+    let meritPhotos = {};
+    let currentMeritCount = 0;
     const resetBtn = document.getElementById("resetBtn");
     const saveBtn = document.getElementById("saveBtn");
     const printBtn = document.getElementById("printBtn");
@@ -892,12 +1072,170 @@
     const areaInput = document.getElementById("areaInput");
     const auditorInput = document.getElementById("auditorInput");
     let itemPhotos = {};
+    
+    // 新增優良事蹟相關DOM元素
+    const addMeritBtn = document.getElementById("addMeritBtn");
+    const meritsContainer = document.getElementById("meritsContainer");
+    const meritsCountDisplay = document.getElementById("meritsCountDisplay");
+    const noMeritsMessage = document.getElementById("noMeritsMessage");
 
     function formatDate(date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
       const day = String(date.getDate()).padStart(2, "0");
       return `${year}/${month}/${day}`;
+    }
+
+    // 優良事蹟管理函數
+    function addMeritCard() {
+      if (currentMeritCount >= MAX_MERITS_PER_AUDIT) {
+        alert(`每次稽核最多只能記錄 ${MAX_MERITS_PER_AUDIT} 個優良事蹟`);
+        return;
+      }
+      
+      const meritId = `merit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const meritCard = createMeritCardHTML(meritId);
+      meritsContainer.insertAdjacentHTML('beforeend', meritCard);
+      currentMeritCount++;
+      updateMeritsDisplay();
+      bindMeritCardEvents(meritId);
+    }
+
+    function createMeritCardHTML(meritId) {
+      const categoryOptions = MERIT_CATEGORIES.map((category, index) => 
+        `<option value="${index}">${category}</option>`
+      ).join('');
+      
+      return `
+        <div class="merit-card" data-merit-id="${meritId}">
+          <div class="merit-header">
+            <select class="merit-category-select" id="merit_category_${meritId}">
+              <option value="">請選擇優良事蹟類別</option>
+              ${categoryOptions}
+            </select>
+            <button type="button" class="merit-remove" onclick="removeMeritCard('${meritId}')">刪除</button>
+          </div>
+          <div class="merit-description">
+            <textarea id="merit_description_${meritId}" placeholder="請描述這個優良事蹟的具體內容..."></textarea>
+          </div>
+          <div class="merit-photo-section">
+            <div class="merit-photo-row">
+              <input type="file" id="merit_photo_input_${meritId}" accept="image/*" capture="environment" style="display:none;">
+              <button type="button" class="btn btn-secondary merit-photo-btn" data-merit-id="${meritId}">拍照</button>
+              <button type="button" class="btn btn-secondary merit-photo-clear-btn" data-merit-id="${meritId}">清除照片</button>
+              <span class="merit-photo-placeholder" id="merit_photo_note_${meritId}">尚未拍照</span>
+            </div>
+            <div>
+              <img id="merit_photo_preview_${meritId}" class="merit-photo-preview" alt="優良事蹟照片預覽">
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function removeMeritCard(meritId) {
+      const meritCard = meritsContainer.querySelector(`[data-merit-id="${meritId}"]`);
+      if (meritCard) {
+        meritCard.remove();
+        delete meritPhotos[meritId];
+        currentMeritCount--;
+        updateMeritsDisplay();
+        saveToLocal();
+      }
+    }
+
+    function updateMeritsDisplay() {
+      meritsCountDisplay.textContent = currentMeritCount;
+      if (currentMeritCount === 0) {
+        noMeritsMessage.style.display = 'block';
+        meritsContainer.style.display = 'none';
+      } else {
+        noMeritsMessage.style.display = 'none';
+        meritsContainer.style.display = 'grid';
+      }
+    }
+
+    function bindMeritCardEvents(meritId) {
+      const fileInput = document.getElementById(`merit_photo_input_${meritId}`);
+      const photoBtn = meritsContainer.querySelector(`.merit-photo-btn[data-merit-id="${meritId}"]`);
+      const clearBtn = meritsContainer.querySelector(`.merit-photo-clear-btn[data-merit-id="${meritId}"]`);
+      const categorySelect = document.getElementById(`merit_category_${meritId}`);
+      const descriptionTextarea = document.getElementById(`merit_description_${meritId}`);
+
+      if (photoBtn && fileInput) {
+        photoBtn.addEventListener("click", () => fileInput.click());
+      }
+
+      if (fileInput) {
+        fileInput.addEventListener("change", (event) => {
+          const [file] = event.target.files || [];
+          if (!file) return;
+          compressImage(file, (dataUrl) => {
+            meritPhotos[meritId] = dataUrl;
+            setMeritPhotoPreview(meritId, dataUrl);
+            saveToLocal();
+          });
+          fileInput.value = "";
+        });
+      }
+
+      if (clearBtn) {
+        clearBtn.addEventListener("click", () => {
+          delete meritPhotos[meritId];
+          setMeritPhotoPreview(meritId, "");
+          saveToLocal();
+        });
+      }
+
+      if (categorySelect) {
+        categorySelect.addEventListener("change", saveToLocal);
+      }
+
+      if (descriptionTextarea) {
+        descriptionTextarea.addEventListener("input", saveToLocal);
+      }
+    }
+
+    function setMeritPhotoPreview(meritId, dataUrl) {
+      const preview = document.getElementById(`merit_photo_preview_${meritId}`);
+      const note = document.getElementById(`merit_photo_note_${meritId}`);
+      if (!preview || !note) return;
+      if (dataUrl) {
+        preview.src = dataUrl;
+        preview.style.display = "block";
+        note.textContent = "已附照片";
+      } else {
+        preview.removeAttribute("src");
+        preview.style.display = "none";
+        note.textContent = "尚未拍照";
+      }
+    }
+
+    function collectMeritData() {
+      const meritCards = meritsContainer.querySelectorAll('.merit-card');
+      const merits = [];
+      
+      meritCards.forEach(card => {
+        const meritId = card.dataset.meritId;
+        const categorySelect = document.getElementById(`merit_category_${meritId}`);
+        const descriptionTextarea = document.getElementById(`merit_description_${meritId}`);
+        
+        const categoryIndex = categorySelect?.value;
+        const description = descriptionTextarea?.value || "";
+        const photo = meritPhotos[meritId] || "";
+        
+        if (categoryIndex && description) {
+          merits.push({
+            id: meritId,
+            category: MERIT_CATEGORIES[categoryIndex],
+            categoryIndex: parseInt(categoryIndex),
+            description: description,
+            photo: photo
+          });
+        }
+      });
+      
+      return merits;
     }
 
     function renderChecklist() {
@@ -973,6 +1311,10 @@
         selections[`item_${index}`] = document.querySelector(`input[name="item_${index}"]:checked`)?.value || "";
         itemNotes[`item_${index}`] = document.getElementById(`item_note_${index}`)?.value || "";
       });
+      
+      // 收集優良事蹟數據
+      const merits = collectMeritData();
+      
       return {
         date: dateTarget.textContent,
         shift: shiftInput.value.trim(),
@@ -981,7 +1323,9 @@
         items: selections,
         itemNotes,
         score: scoreTarget.textContent,
-        itemPhotos
+        itemPhotos,
+        merits: merits,
+        meritPhotos: meritPhotos
       };
     }
 
@@ -1142,6 +1486,8 @@
       areaInput.value = data.area || "";
       auditorInput.value = data.auditor || "";
       itemPhotos = data.itemPhotos || {};
+      meritPhotos = data.meritPhotos || {};
+      
       CHECK_ITEMS.forEach((_, index) => {
         const itemName = `item_${index}`;
         const checkedValue = data.items?.[itemName] || "";
@@ -1151,6 +1497,38 @@
         if (noteInput) noteInput.value = data.itemNotes?.[itemName] || "";
         setItemPhotoPreview(index, itemPhotos[index] || "");
       });
+      
+      // 恢復優良事蹟數據
+      if (data.merits && Array.isArray(data.merits)) {
+        currentMeritCount = 0;
+        meritsContainer.innerHTML = '';
+        
+        data.merits.forEach(merit => {
+          const meritId = merit.id || `merit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          const meritCard = createMeritCardHTML(meritId);
+          meritsContainer.insertAdjacentHTML('beforeend', meritCard);
+          
+          // 恢復數據
+          const categorySelect = document.getElementById(`merit_category_${meritId}`);
+          const descriptionTextarea = document.getElementById(`merit_description_${meritId}`);
+          
+          if (categorySelect && merit.categoryIndex !== undefined) {
+            categorySelect.value = merit.categoryIndex;
+          }
+          if (descriptionTextarea && merit.description) {
+            descriptionTextarea.value = merit.description;
+          }
+          if (merit.photo) {
+            meritPhotos[meritId] = merit.photo;
+            setMeritPhotoPreview(meritId, merit.photo);
+          }
+          
+          currentMeritCount++;
+          bindMeritCardEvents(meritId);
+        });
+        
+        updateMeritsDisplay();
+      }
     }
 
     function getFirstUnselectedIndex() {
@@ -1203,7 +1581,9 @@
     function buildDetailedAppendix() {
       const current = collectData();
       const missingItems = [];
+      const meritItems = [];
       
+      // 收集缺失項目
       CHECK_ITEMS.forEach((item, index) => {
         const status = current.items?.[`item_${index}`];
         if (status && status !== "all_ok") {
@@ -1219,11 +1599,30 @@
         }
       });
       
-      if (missingItems.length === 0) return;
+      // 收集優良事蹟
+      if (current.merits && Array.isArray(current.merits)) {
+        current.merits.forEach(merit => {
+          if (merit.category && merit.description) {
+            meritItems.push({
+              category: merit.category,
+              description: merit.description,
+              photo: merit.photo
+            });
+          }
+        });
+      }
+      
+      if (missingItems.length === 0 && meritItems.length === 0) return;
       
       let appendixHTML = `
         <div style="page-break-inside: avoid; margin-top: 30px;">
           <h3 style="color: #000000; margin-bottom: 15px;">詳細紀錄附錄</h3>
+      `;
+      
+      // 添加缺失項目表格
+      if (missingItems.length > 0) {
+        appendixHTML += `
+          <h4 style="color: #b00000; margin-bottom: 10px;">缺失項目紀錄</h4>
           <table style="width: 100%; border-collapse: collapse; border: 1px solid #b9b9b9; margin-bottom: 20px;">
             <thead>
               <tr style="background: #f0f0f0;">
@@ -1234,24 +1633,61 @@
               </tr>
             </thead>
             <tbody>
-      `;
-      
-      missingItems.forEach((item, index) => {
-        appendixHTML += `
-          <tr>
-            <td style="border: 1px solid #b9b9b9; padding: 8px; color: #000000;">${item.item}</td>
-            <td style="border: 1px solid #b9b9b9; padding: 8px; color: #b00000; font-weight: bold;">${item.status}</td>
-            <td style="border: 1px solid #b9b9b9; padding: 8px; color: #000000;">${item.note || '無'}</td>
-            <td style="border: 1px solid #b9b9b9; padding: 8px; text-align: center;">
-              ${item.photo ? `<img src="${item.photo}" style="max-width: 100px; max-height: 80px; border: 1px solid #ccc;" alt="缺失照片">` : '無照片'}
-            </td>
-          </tr>
         `;
-      });
-      
-      appendixHTML += `
+        
+        missingItems.forEach((item) => {
+          appendixHTML += `
+            <tr>
+              <td style="border: 1px solid #b9b9b9; padding: 8px; color: #000000;">${item.item}</td>
+              <td style="border: 1px solid #b9b9b9; padding: 8px; color: #b00000; font-weight: bold;">${item.status}</td>
+              <td style="border: 1px solid #b9b9b9; padding: 8px; color: #000000;">${item.note || '無'}</td>
+              <td style="border: 1px solid #b9b9b9; padding: 8px; text-align: center;">
+                ${item.photo ? `<img src="${item.photo}" style="max-width: 100px; max-height: 80px; border: 1px solid #ccc;" alt="缺失照片">` : '無照片'}
+              </td>
+            </tr>
+          `;
+        });
+        
+        appendixHTML += `
             </tbody>
           </table>
+        `;
+      }
+      
+      // 添加優良事蹟表格
+      if (meritItems.length > 0) {
+        appendixHTML += `
+          <h4 style="color: #008000; margin-bottom: 10px;">優良事蹟紀錄</h4>
+          <table style="width: 100%; border-collapse: collapse; border: 1px solid #b9b9b9; margin-bottom: 20px;">
+            <thead>
+              <tr style="background: #f0fff0;">
+                <th style="border: 1px solid #b9b9b9; padding: 8px; text-align: left; width: 30%;">優良事蹟類別</th>
+                <th style="border: 1px solid #b9b9b9; padding: 8px; text-align: left; width: 40%;">描述</th>
+                <th style="border: 1px solid #b9b9b9; padding: 8px; text-align: left; width: 30%;">照片</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+        
+        meritItems.forEach((item) => {
+          appendixHTML += `
+            <tr>
+              <td style="border: 1px solid #b9b9b9; padding: 8px; color: #008000; font-weight: bold;">${item.category}</td>
+              <td style="border: 1px solid #b9b9b9; padding: 8px; color: #000000;">${item.description}</td>
+              <td style="border: 1px solid #b9b9b9; padding: 8px; text-align: center;">
+                ${item.photo ? `<img src="${item.photo}" style="max-width: 100px; max-height: 80px; border: 1px solid #ccc;" alt="優良事蹟照片">` : '無照片'}
+              </td>
+            </tr>
+          `;
+        });
+        
+        appendixHTML += `
+            </tbody>
+          </table>
+        `;
+      }
+      
+      appendixHTML += `
         </div>
       `;
       
@@ -1263,8 +1699,10 @@
     function renderStats(records, titleText) {
       const itemCounter = new Map();
       const statusCounter = new Map();
+      const meritCounter = new Map();
       
       records.forEach((record) => {
+        // 統計缺失項目和不合格主題
         CHECK_ITEMS.forEach((item, index) => {
           const status = record.items?.[`item_${index}`];
           if (!status || status === "all_ok") return;
@@ -1276,12 +1714,21 @@
           const statusText = STATUS_TEXT[status] || status;
           statusCounter.set(statusText, (statusCounter.get(statusText) || 0) + 1);
         });
+        
+        // 統計優良事蹟
+        if (record.merits && Array.isArray(record.merits)) {
+          record.merits.forEach(merit => {
+            if (merit.category) {
+              meritCounter.set(merit.category, (meritCounter.get(merit.category) || 0) + 1);
+            }
+          });
+        }
       });
 
-      if (itemCounter.size === 0) {
+      if (itemCounter.size === 0 && meritCounter.size === 0) {
         statsWrap.style.display = "none";
         chartsSection.style.display = "none";
-        alert("目前沒有可統計的缺失資料。");
+        alert("目前沒有可統計的資料。");
         return;
       }
 
@@ -1291,9 +1738,9 @@
         .sort((a, b) => b.count - a.count)
         .map((row) => `
           <tr>
-            <td style="width: 200px;">缺失項目</td>
+            <td style="width: 200px; color: var(--ng);">缺失項目</td>
             <td>${row.item}</td>
-            <td style="width: 120px;">${row.count}</td>
+            <td style="width: 120px; color: var(--ng); font-weight: bold;">${row.count}</td>
           </tr>
         `)
         .join("");
@@ -1304,15 +1751,28 @@
         .sort((a, b) => b.count - a.count)
         .map((row) => `
           <tr>
-            <td style="width: 200px;">不合格主題</td>
+            <td style="width: 200px; color: var(--ng);">不合格主題</td>
             <td>${row.status}</td>
-            <td style="width: 120px;">${row.count}</td>
+            <td style="width: 120px; color: var(--ng); font-weight: bold;">${row.count}</td>
+          </tr>
+        `)
+        .join("");
+
+      // 生成優良事蹟統計表格
+      const meritRows = Array.from(meritCounter.entries())
+        .map(([category, count]) => ({ category: category, count: count }))
+        .sort((a, b) => b.count - a.count)
+        .map((row) => `
+          <tr>
+            <td style="width: 200px; color: var(--ok);">優良事蹟</td>
+            <td>${row.category}</td>
+            <td style="width: 120px; color: var(--ok); font-weight: bold;">${row.count}</td>
           </tr>
         `)
         .join("");
 
       statsTitle.textContent = titleText;
-      statsBody.innerHTML = itemRows + statusRows;
+      statsBody.innerHTML = itemRows + statusRows + meritRows;
       statsWrap.style.display = "block";
       
       // 準備圖表數據並顯示圖表
@@ -1568,8 +2028,10 @@
     // 新增圓餅圖實現
     function createPieChart(records) {
       const itemCounter = new Map();
+      const meritCounter = new Map();
       
       records.forEach((record) => {
+        // 統計缺失項目
         CHECK_ITEMS.forEach((_, index) => {
           const status = record.items?.[`item_${index}`];
           if (status && status !== "all_ok") {
@@ -1577,9 +2039,18 @@
             itemCounter.set(item, (itemCounter.get(item) || 0) + 1);
           }
         });
+        
+        // 統計優良事蹟
+        if (record.merits && Array.isArray(record.merits)) {
+          record.merits.forEach(merit => {
+            if (merit.category) {
+              meritCounter.set(merit.category, (meritCounter.get(merit.category) || 0) + 1);
+            }
+          });
+        }
       });
 
-      if (itemCounter.size === 0) {
+      if (itemCounter.size === 0 && meritCounter.size === 0) {
         if (pieChart) {
           pieChart.destroy();
           pieChart = null;
@@ -1587,14 +2058,31 @@
         return;
       }
 
-      const labels = Array.from(itemCounter.keys());
-      const data = Array.from(itemCounter.values());
+      // 合併缺失項目和優良事蹟數據
+      const allData = [];
+      const labels = [];
+      const data = [];
+      const colors = [];
       
-      const colors = [
-        '#ff7979', '#ffa500', '#9370db', '#20b2aa', '#32d17f',
-        '#4f8dff', '#ff6b9d', '#c44569', '#f8b500', '#00b894',
-        '#ff6348', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'
-      ];
+      // 添加缺失項目（紅色系）
+      const redColors = ['#ff7979', '#ff6b6b', '#ff5252', '#ff3838', '#ff1e1e'];
+      let redIndex = 0;
+      itemCounter.forEach((count, item) => {
+        labels.push(`🔴 ${item}`);
+        data.push(count);
+        colors.push(redColors[redIndex % redColors.length]);
+        redIndex++;
+      });
+      
+      // 添加優良事蹟（綠色系）
+      const greenColors = ['#32d17f', '#2bc67a', '#24bb75', '#1db070', '#16a56b'];
+      let greenIndex = 0;
+      meritCounter.forEach((count, category) => {
+        labels.push(`🟢 ${category}`);
+        data.push(count);
+        colors.push(greenColors[greenIndex % greenColors.length]);
+        greenIndex++;
+      });
 
       if (pieChart) {
         pieChart.destroy();
@@ -1606,7 +2094,7 @@
           labels: labels,
           datasets: [{
             data: data,
-            backgroundColor: colors.slice(0, labels.length),
+            backgroundColor: colors,
             borderColor: '#ffffff',
             borderWidth: 2
           }]
@@ -1621,7 +2109,7 @@
                 color: '#d5e4ff',
                 padding: 15,
                 font: {
-                  size: 12
+                  size: 11
                 }
               }
             },
@@ -1632,7 +2120,7 @@
                   const value = context.parsed || 0;
                   const total = context.dataset.data.reduce((a, b) => a + b, 0);
                   const percentage = ((value / total) * 100).toFixed(1);
-                  return `${label}: ${value}次 (${percentage}%)`;
+                  return `${label.replace(/[🔴🟢]\s/, '')}: ${value}次 (${percentage}%)`;
                 }
               }
             }
@@ -1640,8 +2128,15 @@
           onClick: (event, elements) => {
             if (elements.length > 0) {
               const index = elements[0].index;
-              const item = labels[index];
-              filterRecordsByItem(item);
+              const fullLabel = labels[index];
+              const isMerit = fullLabel.includes('🟢');
+              const cleanLabel = fullLabel.replace(/[🔴🟢]\s/, '');
+              
+              if (isMerit) {
+                filterRecordsByMeritCategory(cleanLabel);
+              } else {
+                filterRecordsByItem(cleanLabel);
+              }
             }
           }
         }
@@ -1651,6 +2146,7 @@
     // 新增長條圖實現
     function createBarChart(records) {
       const dailyStatusCounter = new Map();
+      const dailyMeritCounter = new Map();
       
       // 獲取最近7天的日期
       const today = new Date();
@@ -1661,9 +2157,10 @@
         const date = new Date(sevenDaysAgo.getTime() + i * 24 * 60 * 60 * 1000);
         const dateStr = date.toLocaleDateString('zh-TW');
         dailyStatusCounter.set(dateStr, new Map());
+        dailyMeritCounter.set(dateStr, new Map());
       }
 
-      // 統計各不合格主題在各天的缺失次數
+      // 統計各不合格主題和優良事蹟在各天的缺失次數
       records.forEach((record) => {
         const recordDate = new Date(record.savedAt);
         if (recordDate >= sevenDaysAgo && recordDate <= today) {
@@ -1671,6 +2168,9 @@
           
           if (!dailyStatusCounter.has(dateStr)) {
             dailyStatusCounter.set(dateStr, new Map());
+          }
+          if (!dailyMeritCounter.has(dateStr)) {
+            dailyMeritCounter.set(dateStr, new Map());
           }
           
           CHECK_ITEMS.forEach((_, index) => {
@@ -1681,18 +2181,35 @@
               statusMap.set(statusText, (statusMap.get(statusText) || 0) + 1);
             }
           });
+          
+          // 統計優良事蹟
+          if (record.merits && Array.isArray(record.merits)) {
+            record.merits.forEach(merit => {
+              if (merit.category) {
+                const meritMap = dailyMeritCounter.get(dateStr);
+                meritMap.set(merit.category, (meritMap.get(merit.category) || 0) + 1);
+              }
+            });
+          }
         }
       });
 
       // 準備圖表數據
       const dates = Array.from(dailyStatusCounter.keys()).sort();
       const allStatuses = new Set();
+      const allMerits = new Set();
+      
       dailyStatusCounter.forEach(statusMap => {
         statusMap.forEach((_, status) => allStatuses.add(status));
       });
+      dailyMeritCounter.forEach(meritMap => {
+        meritMap.forEach((_, merit) => allMerits.add(merit));
+      });
+      
       const statusLabels = Array.from(allStatuses).sort();
+      const meritLabels = Array.from(allMerits).sort();
 
-      if (statusLabels.length === 0) {
+      if (statusLabels.length === 0 && meritLabels.length === 0) {
         if (barChart) {
           barChart.destroy();
           barChart = null;
@@ -1700,24 +2217,40 @@
         return;
       }
 
-      const datasets = statusLabels.map((status, index) => {
-        const colors = [
-          '#ff7979', '#ffa500', '#9370db', '#20b2aa', '#32d17f',
-          '#4f8dff', '#ff6b9d', '#c44569', '#f8b500', '#00b894'
-        ];
-        
+      const datasets = [];
+      
+      // 添加不合格主題數據集（紅色系）
+      statusLabels.forEach((status, index) => {
+        const redColors = ['#ff7979', '#ff6b6b', '#ff5252', '#ff3838'];
         const data = dates.map(date => {
           const statusMap = dailyStatusCounter.get(date);
           return statusMap ? (statusMap.get(status) || 0) : 0;
         });
 
-        return {
-          label: status,
+        datasets.push({
+          label: `🔴 ${status}`,
           data: data,
-          backgroundColor: colors[index % colors.length],
-          borderColor: colors[index % colors.length],
+          backgroundColor: redColors[index % redColors.length],
+          borderColor: redColors[index % redColors.length],
           borderWidth: 1
-        };
+        });
+      });
+      
+      // 添加優良事蹟數據集（綠色系）
+      meritLabels.forEach((merit, index) => {
+        const greenColors = ['#32d17f', '#2bc67a', '#24bb75', '#1db070'];
+        const data = dates.map(date => {
+          const meritMap = dailyMeritCounter.get(date);
+          return meritMap ? (meritMap.get(merit) || 0) : 0;
+        });
+
+        datasets.push({
+          label: `🟢 ${merit}`,
+          data: data,
+          backgroundColor: greenColors[index % greenColors.length],
+          borderColor: greenColors[index % greenColors.length],
+          borderWidth: 1
+        });
       });
 
       if (barChart) {
@@ -1761,7 +2294,7 @@
                 color: '#d5e4ff',
                 padding: 15,
                 font: {
-                  size: 12
+                  size: 11
                 }
               }
             },
@@ -1773,8 +2306,15 @@
           onClick: (event, elements) => {
             if (elements.length > 0) {
               const datasetIndex = elements[0].datasetIndex;
-              const status = statusLabels[datasetIndex];
-              filterRecordsByStatus(status);
+              const fullLabel = datasets[datasetIndex].label;
+              const isMerit = fullLabel.includes('🟢');
+              const cleanLabel = fullLabel.replace(/[🔴🟢]\s/, '');
+              
+              if (isMerit) {
+                filterRecordsByMeritCategory(cleanLabel);
+              } else {
+                filterRecordsByStatus(cleanLabel);
+              }
             }
           }
         }
@@ -1786,6 +2326,7 @@
       allRecordsData = [];
       
       records.forEach((record) => {
+        // 添加缺失項目紀錄
         CHECK_ITEMS.forEach((item, index) => {
           const status = record.items?.[`item_${index}`];
           if (status && status !== "all_ok") {
@@ -1806,6 +2347,24 @@
             });
           }
         });
+        
+        // 添加優良事蹟紀錄
+        if (record.merits && Array.isArray(record.merits)) {
+          record.merits.forEach(merit => {
+            allRecordsData.push({
+              date: record.date || new Date(record.savedAt).toLocaleDateString('zh-TW'),
+              area: record.area || "未填區域",
+              shift: record.shift || "",
+              auditor: record.auditor || "",
+              itemName: "優良事蹟",
+              status: "merit",
+              statusText: merit.category,
+              note: merit.description,
+              photo: merit.photo,
+              savedAt: record.savedAt
+            });
+          });
+        }
       });
       
       // 按日期降序排序
@@ -1818,24 +2377,48 @@
         return;
       }
 
-      const recordsHTML = records.map((record, index) => `
-        <div class="record-card">
-          <div class="record-header">
-            <div class="record-area">${record.area}</div>
-            <div class="record-date">${record.date}</div>
+      const recordsHTML = records.map((record, index) => {
+        const isMerit = record.itemName === '優良事蹟';
+        const statusClass = isMerit ? 'merit' : 'ng';
+        const statusColor = isMerit ? 'var(--ok)' : 'var(--ng)';
+        const statusBgColor = isMerit ? 'rgba(50, 209, 127, 0.2)' : 'rgba(255, 121, 121, 0.2)';
+        
+        return `
+          <div class="record-card">
+            <div class="record-header">
+              <div class="record-area">${record.area}</div>
+              <div class="record-date">${record.date}</div>
+            </div>
+            <div class="record-item">
+              <div class="record-item-name">${record.itemName === '優良事蹟' ? record.statusText : record.itemName}</div>
+              <div class="record-item-status ${statusClass}" style="background: ${statusBgColor}; color: ${statusColor};">
+                ${record.itemName === '優良事蹟' ? '🟢' : '🔴'} ${record.statusText}
+              </div>
+              ${record.note ? `<div class="record-item-note">備註：${record.note}</div>` : ''}
+              ${record.photo ? `
+                <img src="${record.photo}" alt="${isMerit ? '優良事蹟照片' : '缺失照片'}" class="record-photo" onclick="showPhotoModal('${record.photo}')">
+              ` : ''}
+            </div>
           </div>
-          <div class="record-item">
-            <div class="record-item-name">${record.itemName}</div>
-            <div class="record-item-status ng">${record.statusText}</div>
-            ${record.note ? `<div class="record-item-note">備註：${record.note}</div>` : ''}
-            ${record.photo ? `
-              <img src="${record.photo}" alt="缺失照片" class="record-photo" onclick="showPhotoModal('${record.photo}')">
-            ` : ''}
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       recordsGrid.innerHTML = recordsHTML;
+    }
+
+    function filterRecordsByMeritCategory(category) {
+      const filteredRecords = allRecordsData.filter(record => 
+        record.itemName === '優良事蹟' && record.statusText === category
+      );
+      
+      filterInfo.textContent = `篩選條件：優良事蹟 - ${category} (${filteredRecords.length}筆紀錄)`;
+      renderDetailedRecords(filteredRecords);
+      
+      // 切換到詳細紀錄視圖
+      switchToDetailedView();
+      
+      // 滾動到詳細紀錄區域
+      detailedRecords.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function filterRecordsByItem(item) {
@@ -2023,6 +2606,13 @@
         delete itemPhotos[index];
         setItemPhotoPreview(index, "");
       });
+      
+      // 重置優良事蹟
+      meritPhotos = {};
+      currentMeritCount = 0;
+      meritsContainer.innerHTML = '';
+      updateMeritsDisplay();
+      
       markMissingItems();
       saveToLocal();
     });
@@ -2050,11 +2640,11 @@
       const history = getHistory();
       const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
       const filtered = history.filter((record) => new Date(record.savedAt).getTime() >= sevenDaysAgo);
-      renderStats(filtered, "近 7 天缺失項目與不合格主題統計");
+      renderStats(filtered, "近 7 天缺失項目、不合格主題與優良事蹟統計");
     });
 
     allTimeStatsBtn.addEventListener("click", () => {
-      renderStats(getHistory(), "上線至今缺失項目與不合格主題統計");
+      renderStats(getHistory(), "上線至今缺失項目、不合格主題與優良事蹟統計");
     });
 
     exportDataBtn.addEventListener("click", () => {
@@ -2071,6 +2661,9 @@
       if (file) importBackup(file);
       importFileInput.value = "";
     });
+
+    // 優良事蹟按鈕事件監聽器
+    addMeritBtn.addEventListener("click", addMeritCard);
 
     // 圖表標籤切換事件
     document.querySelectorAll(".chart-tab").forEach(tab => {
