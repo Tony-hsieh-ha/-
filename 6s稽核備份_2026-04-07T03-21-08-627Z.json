@@ -1,0 +1,96 @@
+{
+  "version": "1.0",
+  "exportedAt": "2026-04-07T03:21:08.625Z",
+  "current": {
+    "date": "2026/04/07",
+    "shift": "日班",
+    "area": "EPI",
+    "auditor": "王治國",
+    "items": {
+      "item_0": "all_ok",
+      "item_1": "all_ok",
+      "item_2": "p_ng",
+      "item_3": "n_ng",
+      "item_4": "pack_ng",
+      "item_5": "n_ng",
+      "item_6": "all_ok",
+      "item_7": "n_ng",
+      "item_8": "all_ok",
+      "item_9": "n_ng",
+      "item_10": "all_ok",
+      "item_11": "all_ok"
+    },
+    "itemNotes": {
+      "item_0": "",
+      "item_1": "",
+      "item_2": "",
+      "item_3": "",
+      "item_4": "",
+      "item_5": "",
+      "item_6": "",
+      "item_7": "",
+      "item_8": "",
+      "item_9": "",
+      "item_10": "",
+      "item_11": ""
+    },
+    "score": "50%",
+    "itemPhotos": {}
+  },
+  "history": [
+    {
+      "savedAt": "2026-03-27T01:20:10.171Z",
+      "area": "EPI",
+      "items": {
+        "item_0": "all_ok",
+        "item_1": "n_ng",
+        "item_2": "all_ok",
+        "item_3": "all_ok",
+        "item_4": "all_ok",
+        "item_5": "n_ng",
+        "item_6": "all_ok",
+        "item_7": "n_ng",
+        "item_8": "all_ok",
+        "item_9": "n_ng",
+        "item_10": "all_ok",
+        "item_11": "all_ok"
+      }
+    },
+    {
+      "savedAt": "2026-03-27T01:20:13.847Z",
+      "area": "EPI",
+      "items": {
+        "item_0": "all_ok",
+        "item_1": "n_ng",
+        "item_2": "all_ok",
+        "item_3": "all_ok",
+        "item_4": "all_ok",
+        "item_5": "n_ng",
+        "item_6": "all_ok",
+        "item_7": "n_ng",
+        "item_8": "all_ok",
+        "item_9": "n_ng",
+        "item_10": "all_ok",
+        "item_11": "all_ok"
+      }
+    },
+    {
+      "savedAt": "2026-03-27T01:20:49.674Z",
+      "area": "EPI",
+      "items": {
+        "item_0": "all_ok",
+        "item_1": "all_ok",
+        "item_2": "p_ng",
+        "item_3": "n_ng",
+        "item_4": "pack_ng",
+        "item_5": "n_ng",
+        "item_6": "all_ok",
+        "item_7": "n_ng",
+        "item_8": "all_ok",
+        "item_9": "n_ng",
+        "item_10": "all_ok",
+        "item_11": "all_ok"
+      }
+    }
+  ]
+}
